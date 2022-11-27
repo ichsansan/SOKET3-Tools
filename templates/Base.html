@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  {% if title %}
+    <title>{{ title }}</title>
+  {% else %}
+    <title>SOKET 3 Tools</title>
+  {% endif %}
+  <meta name="robots" content="noindex, nofollow">
+  <meta content="" name="description">
+  <meta content="" name="keywords">
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link
+    href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.21.1/dist/bootstrap-table.min.css">
+  <link rel="stylesheet" href="/static/css/vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/vendor/bootstrap-icons.css">
+  <link rel="stylesheet" href="/static/css/vendor/fa-all.min.css">
+  <link rel="stylesheet" href="/static/css/homepage.css">
+</head>
+
+<body>
+  <header id="header" class="header fixed-top d-flex align-items-center">
+    <div class="d-flex align-items-center justify-content-between">
+      <a href="/" class="logo d-flex align-items-center">
+        <img src="/static/css/img/logo.png" alt="">
+        <span class="d-none h3 d-lg-block">SOKET 3 Tools</span>
+      </a>
+      <i class="fas fa-bars toggle-sidebar-btn"></i>
+    </div>
+    <nav class="header-nav ms-auto">
+      <ul class="d-flex align-items-center">
+        <li>
+          <div class="search-bar">
+            <form class="search-form d-flex align-items-center" method="POST" action="#">
+              <input type="text" name="query" placeholder="Search" title="Enter search keyword">
+              <button type="submit" title="Search">
+                <i class="fas fa-search"></i>
+              </button>
+            </form>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </header>
+  <aside id="sidebar" class="sidebar">
+    <ul class="sidebar-nav" id="sidebar-nav">
+      <li class="nav-item"> <a class="nav-link " href="/"> <i class="fas fa-tv me-2"></i> <span>Dashboard</span>
+        </a></li>
+      <li class="nav-heading">Pages</li>
+      <li class="nav-item"> <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse"
+          href="#"> <i class="fas fa-cloud me-2"></i><span>Drive Monitoring</span><i
+            class="fas fa-chevron-down ms-auto"></i> </a>
+        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li> <a href="/DriveMonitoring/PJBBox"> <i class="fas fa-bolt" style="width: 25px;"></i><span>PJB Box</span> </a></li>
+          <li> <a href="/DriveMonitoring/GdriveSML"> <i class="fab fa-google-drive" style="width: 25px;"></i><span>Google Drive SML</span> </a></li>
+        </ul>
+      </li>
+      <li class="nav-item"> <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse"
+          href="#"> <i class="fas fa-chart-simple me-2"></i><span>Historian Recap</span><i class="fas fa-chevron-down ms-auto"></i> </a>
+        <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+          <li> <a href="/HistorianRecap/PLTU-Paiton-9"> <i class="far fa-xs fa-circle me-2"></i><span>PLTU Paiton 9</span> </a></li>
+          <li> <a href="/HistorianRecap/PLTU-Pulang-Pisau"> <i class="far fa-xs fa-circle me-2"></i><span>PLTU Pulang Pisau</span> </a></li>
+          <li> <a href="/HistorianRecap/PLTU-Kendari"> <i class="far fa-xs fa-circle me-2"></i><span>PLTU Kendari</span> </a></li>
+          <li> <a href="/HistorianRecap/PLTU-Bangka"> <i class="far fa-xs fa-circle me-2"></i><span>PLTU Bangka</span> </a></li>
+          <li> <a href="/HistorianRecap/PLTU-Tidore"> <i class="far fa-xs fa-circle me-2"></i><span>PLTU Tidore</span> </a></li>
+        </ul>
+      </li>
+      <!-- <li class="nav-heading">Pages</li>
+      <li class="nav-item"> <a class="nav-link collapsed" href="users-profile.html"> <i class="bi bi-person"></i>
+          <span>Profile</span> </a></li> -->
+    </ul>
+  </aside>
+  <main id="main" class="main">
+    {% block mainpage %}
+      
+    {% endblock mainpage %}
+  </main>
+
+
+  <script src="https://code.jquery.com/jquery-3.6.1.min.js"
+    integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+  <script src="/static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/js/all.min.js"
+    integrity="sha512-rpLlll167T5LJHwp0waJCh3ZRf7pO6IT1+LZOhAyP6phAirwchClbTZV3iqL3BMrVxIYRbzGTpli4rfxsCK6Vw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://unpkg.com/bootstrap-table@1.21.1/dist/bootstrap-table.min.js"></script>
+  <script>
+    console.log('ready');
+    $(".toggle-sidebar-btn").click(function () {
+        $("body").toggleClass("toggle-sidebar");
+    })
+    console.log('ready for real');
+  </script>
+  {% block scripts %}
+    
+  {% endblock scripts %}
+</body>
+
+</html>

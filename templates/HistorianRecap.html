@@ -1,0 +1,87 @@
+{% extends 'Base.html' %}
+{% block mainpage %}
+<div class="pagetitle">
+  <h1>Rekap {{ unit }}</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#">Historian Recap</a></li>
+      <li class="breadcrumb-item active">{{ unit }}</li>
+    </ol>
+  </nav>
+</div>
+<section class="section dashboard">
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="row">
+        <div class="col-12">
+          <div class="card reports">
+            <div class="card-body">
+              <h5 class="card-title">Daily Availability <span>/ {{ unit }}</span></h5>
+              <div id="dailyAvailability" class="overflow-auto" style="min-height: 130px; max-height: 745px;">
+                <div class="text-center h-100" style="transform: translateY(40%);">
+                  <i class="fas fa-3x fa-spinner fa-spin-pulse"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="card reports">
+            <div class="card-body">
+              <h5 class="card-title">Recap Tags <span>/ {{ unit }}</span></h5>
+              <div id="tagRecap" class="overflow-auto" style="min-height: 130px; max-height: 500px;">
+                <table class="placeholder-glow table table-borderless table-hover">
+                  <tbody>
+                    <tr>
+                      <th>Tag Counts</th>
+                      <td class="" id="tagcount"><i class="fas fa-spin fa-circle-nodes"></i></td>
+                    </tr>
+                    <tr>
+                      <th>Date Start</th>
+                      <td class="" id="startdate"><i class="fas fa-spin fa-spin-reverse fa-circle-nodes"></i></td>
+                    </tr>
+                    <tr>
+                      <th>Date End</th>
+                      <td class="" id="enddate"><i class="fas fa-spin fa-circle-nodes"></i></td>
+                    </tr>
+                    <tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="card reports">
+            <div class="card-body">
+              <h5 class="card-title">Tag Lists <span>/ {{ unit }}</span></h5>
+              <div id="tagLists" class="overflow-auto" style="min-height: 130px; max-height: 500px;">
+                <div class="text-center h-100" style="transform: translateY(40%);">
+                  <i class="fas fa-3x fa-spinner fa-spin-pulse"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock mainpage %}
+
+
+
+{% block scripts %}
+<script src="/static/js/HistorianRecap.js"></script>
+<script>
+  $(document).ready(function () {
+    getTagLists('{{unit}}');
+    getTagRecap('{{unit}}');
+  });
+</script>
+{% endblock scripts %}

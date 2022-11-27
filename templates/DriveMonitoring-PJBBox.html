@@ -1,0 +1,105 @@
+{% extends 'Base.html' %}
+{% block mainpage %}
+<div class="pagetitle">
+  <h1>Drive Monitoring - PJB Box</h1>
+  <nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="#">Drive Monitoring</a></li>
+      <li class="breadcrumb-item active">PJB Box</li>
+    </ol>
+  </nav>
+</div>
+<section class="section dashboard">
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="row">
+        <div class="col-12">
+          <div class="card reports">
+            <div class="filter"> <a class="icon" href="#" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-vertical"></i></a>
+              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                <li class="dropdown-header text-start">
+                  <h6>Filter</h6>
+                </li>
+                <li><a class="dropdown-item" href="#">Today</a></li>
+                <li><a class="dropdown-item" href="#">Last 3 days</a></li>
+                <li><a class="dropdown-item" href="#">Last week</a></li>
+              </ul>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">PJB Box Changes <span>/ Today</span></h5>
+              <div id="PJBBoxReports" class="overflow-auto" style="min-height: 100px; max-height: 400px;">
+                <div class="text-center h-100" style="transform: translateY(40%);">
+                  <i class="fas fa-3x fa-spin-pulse fa-spinner"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card reports">
+            <div class="filter"> <a class="icon" href="#" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-vertical"></i></a>
+              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                <li class="dropdown-header text-start">
+                  <h6>Filter</h6>
+                </li>
+                <li><a class="dropdown-item" href="#">Today</a></li>
+                <li><a class="dropdown-item" href="#">Last 3 days</a></li>
+                <li><a class="dropdown-item" href="#">Last week</a></li>
+              </ul>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">PJB Box Table of Contents <span>/ Today</span></h5>
+              <div id="tbOfContent" class="overflow-auto" style="min-height: 100px; max-height: 600px;">
+                <div class="text-center h-100" style="transform: translateY(40%);">
+                  <i class="fas fa-3x fa-spin-pulse fa-spinner"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="card reports">
+            <div class="filter"> <a class="icon" href="#" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-vertical"></i></a>
+              <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                <li class="dropdown-header text-start">
+                  <h6>Filter</h6>
+                </li>
+                <li><a class="dropdown-item" href="#">Today</a></li>
+                <li><a class="dropdown-item" href="#">Last 3 days</a></li>
+                <li><a class="dropdown-item" href="#">Last week</a></li>
+              </ul>
+            </div>
+            <div class="card-body">
+              <h5 class="card-title">Recent Activity <span>| Today</span></h5>
+              <div class="activity">
+                <div class="activity-item d-flex">
+                  <div class="activite-label">19 Nov</div> <i
+                    class="fas fa-xs fa-circle me-2 activity-badge text-success align-self-start"></i>
+                  <div class="activity-content"> New file PLTU Gresik </div>
+                </div>
+                <div class="activity-item d-flex">
+                  <div class="activite-label">18 Nov</div> <i
+                    class="fas fa-xs fa-circle me-2 activity-badge text-danger align-self-start"></i>
+                  <div class="activity-content"> Deleted file PLTU Gresik</div>
+                </div>
+                <div class="activity-item d-flex">
+                  <div class="activite-label">04 Nov</div> <i
+                    class="fas fa-xs fa-circle me-2 activity-badge text-success align-self-start"></i>
+                  <div class="activity-content"> New file PLTU Tidore</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock mainpage %}
+
+{% block scripts %}
+<script src="/static/js/DriveMonitoring-PJBbox.js"></script>
+{% endblock scripts %}
