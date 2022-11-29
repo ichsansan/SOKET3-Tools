@@ -1,11 +1,11 @@
 {% extends 'Base.html' %}
 {% block mainpage %}
 <div class="pagetitle">
-  <h1>Drive Monitoring - PJB Box</h1>
+  <h1>Drive Monitoring - {{project_name}}</h1>
   <nav>
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a href="#">Drive Monitoring</a></li>
-      <li class="breadcrumb-item active">PJB Box</li>
+      <li class="breadcrumb-item active">{{project_name}}</li>
     </ol>
   </nav>
 </div>
@@ -26,8 +26,8 @@
               </ul>
             </div>
             <div class="card-body">
-              <h5 class="card-title">PJB Box Changes <span>/ Today</span></h5>
-              <div id="PJBBoxReports" class="overflow-auto" style="min-height: 100px; max-height: 400px;">
+              <h5 class="card-title">{{project_name.replace(' SOKET3','')}} Changes <span>/ Today</span></h5>
+              <div id="shortReports" class="overflow-auto" style="min-height: 100px; max-height: 400px;">
                 <div class="text-center h-100" style="transform: translateY(40%);">
                   <i class="fas fa-3x fa-spin-pulse fa-spinner"></i>
                 </div>
@@ -48,7 +48,7 @@
             </div>
             <div class="card-body">
               <h5 class="card-title">PJB Box Table of Contents <span>/ Today</span></h5>
-              <div id="tbOfContent" class="overflow-auto" style="min-height: 100px; max-height: 600px;">
+              <div id="allReports" class="overflow-auto" style="min-height: 100px; max-height: 600px;">
                 <div class="text-center h-100" style="transform: translateY(40%);">
                   <i class="fas fa-3x fa-spin-pulse fa-spinner"></i>
                 </div>
@@ -74,7 +74,7 @@
             </div>
             <div class="card-body">
               <h5 class="card-title">Recent Activity <span>| Today</span></h5>
-              <div class="activity">
+              <div class="activity" id="recentActivity" style="min-height: 300px;">
                 <div class="activity-item d-flex">
                   <div class="activite-label">19 Nov</div> <i
                     class="fas fa-xs fa-circle me-2 activity-badge text-success align-self-start"></i>
@@ -101,5 +101,13 @@
 {% endblock mainpage %}
 
 {% block scripts %}
-<script src="/static/js/DriveMonitoring-PJBbox.js"></script>
+<script src="/static/js/DriveMonitoring.js"></script>
+<script>
+  $(document).ready(function () {
+    console.log("Project name: {{project_name}}")
+    refreshDaftarIsi('shortReports', '{{project_name}}','Today');
+    refreshDaftarIsi('allReports', '{{project_name}}', '60 Day');
+    refreshRecentActivity('recentActivity', '{{project_name}}');
+  });
+</script>
 {% endblock scripts %}

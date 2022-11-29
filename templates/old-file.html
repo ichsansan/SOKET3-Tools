@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.21.1/dist/bootstrap-table.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/bootstrap-table@1.21.1/dist/bootstrap-table.min.js"></script>
+  <title>ICH - PJB Box Monitoring</title>
+</head>
+
+<body>
+  <div class="container mt-3">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <a class="h1 text-decoration-none text-dark" href="/">Rekap file PJB Box</a>
+    <p class="my-0">Link box: <span class="badge bg-light text-primary font-monospace">https://box.ptpjb.com/s/eJBGmz4d3ykZso2</span></p>
+    <p class="my-0">File: 
+        <span class="badge bg-light text-black font-monospace">{{ file }}</span>
+        <a class="btn btn-sm btn-success" href="/download/{{ file }}">Download</a>
+    </p>
+
+    <table id="table" data-toggle="table" data-height="700" data-show-columns="true" data-search="true" data-url="/getfile/{{ file }}">
+      <thead>
+        <tr>
+          <th data-field="Path" data-sortable="true">Path</th>
+          <th data-field="File Name" data-sortable="true">File Name</th>
+          <th data-field="Extension" data-sortable="true">Extension</th>
+          <th data-field="Last Modified" data-sortable="true">Last Modified</th>
+          <th data-field="File Size (bytes)" data-sortable="true">File Size (bytes)</th>
+          <th data-field="Readable File Size" data-sortable="true">File Size</th>
+        </tr>
+      </thead>
+    </table>
+    <hr>
+    <form>
+      <div class="row">
+        <div class="col-md-9">
+          <select class="form-select" aria-label="Default select example" name="file" required>
+            <option selected value="">Ganti file</option>
+            {% for file in listfiles %}
+              <option value="{{file}}">{{file}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3 d-grid">
+          <button class="btn btn-secondary">Ganti file</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+</body>
+
+</html>

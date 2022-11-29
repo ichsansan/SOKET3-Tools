@@ -63,8 +63,39 @@ function refreshDaftarIsi(element_name, project_name, periods) {
     });
 }
 
-$(document).ready(function () {
-    refreshDaftarIsi('PJBBoxReports','PJB Box SOKET3','Today');
-    refreshDaftarIsi('tbOfContent', 'PJB Box SOKET3', '60 Day');
-});
+function refreshRecentActivity(element_name, project_name) {
+    document.getElementById(element_name).innerHTML = "<div class=\"text-center h-100\" style=\"transform: translateY(40%);\"><i class=\"fas fa-3x fa-spinner fa-spin-pulse fa-spin-reverse\"></i></div>"
+    // $("#" + element_name).prev().children()[0].innerHTML = "/ " + periods;
+
+    $.ajax({
+        type: "get",
+        url: "/service/daftar-isi/recent-activity",
+        data: {'project_name':project_name},
+        success: function (response) {
+            var Element = document.getElementById(element_name);
+            try {
+                var content = response.content;
+                
+                htmlcontent = '';
+                for (const i in content) {
+                    var date = content[i]['date'];
+                    var event = content[i]['event'];
+                    var color = content[i]['color'];
+                    
+                    htmlcontent += `\
+                        <div class="activity-item d-flex"> \
+                            <div class="activite-label">${date}</div> \
+                            <i class="fas fa-xs fa-circle me-2 activity-badge ${color} align-self-start"></i> \
+                            <div class="activity-content"> ${event} </div> \
+                        </div>`;
+                }
+                document.getElementById(element_name).innerHTML = htmlcontent;
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    });
+}
+
+
 

@@ -6,6 +6,7 @@ from urllib.parse import quote
 
 con = 'mysql+mysqlconnector://smlds:SMLds2021!@0.0.0.0/db_soket3'
 box_link = 'https://box.ptpjb.com/s/eJBGmz4d3ykZso2'
+old_excel_loc = '/mnt/disks/Others/Monitoring PJB Box/data/Excel Recap/'
 timezone = 7
 
 def convert_size(number):
@@ -132,6 +133,24 @@ def get_service_perubahan_daftarisi(data = {}):
     ret['content'] = Data.astype(str).to_dict(orient='records')
     return ret
 
+def get_service_recent_activity(data):
+    ret = {}
+    engine = create_engine(con)
+    project_name = 'PJB Box SOKET3'
+    
+    if 'project_name' in data.keys(): project_name = data['project_name']
+    q = f"""SELECT f_updated_at AS `date`, count(*) AS `filecount`, f_file_status AS file_status FROM tb_daftar_isi_rekap
+            WHERE f_project_name = "{project_name}"
+            GROUP BY f_updated_at, f_file_status 
+            ORDER BY f_updated_at DESC """
+    Data = pd.read_sql(q, con)
+    Data['date'] = [f.strftime('%d %b') for f in Data['date']]
+    Data['event'] = [f"Ada tambahan {e} file" if f==1 else f"Ada {e} file didelete" for e,f in Data[['filecount','file_status']].values]
+    Data['color'] = [f"text-success" if f==1 else "text-danger" for f in Data['file_status'].values]
+    Data = Data[['date','event','color']]
+    ret = Data.astype(str).to_dict(orient='records')
+    return ret
+
 def get_service_taglists(unit):
     ret = {
         'columns': [],
@@ -222,3 +241,132 @@ def update_daftar_isi(project_name='PJB Box SOKET3'):
         'message': f'Update successful with {len(DI_insert)} lines.'
     }
     return ret
+
+def update_daftar_isi():
+    PATH = '/mnt/disks/Others/Monitoring PJB Box/data/5 Assesment Unit Pembangkit Terkait Implementasi'
+    project_name = "PJB Box SOKET3"
+
+    DI = []
+    for r, fo, fi in os.walk(PATH):
+        for file in fi:
+            path = os.path.join(r, file)
+            filepath = path.replace(PATH, '')
+            filesize = os.path.getsize(path)
+            filectime = pd.to_datetime(os.path.getctime(path) * 1e9)
+            filemtime = pd.to_datetime(os.path.getmtime(path) * 1e9)
+            DI.append([filepath, file, filesize, filectime, filemtime])
+
+    DI = pd.DataFrame(DI, columns = ['File Location','File Name','File Size', 'Created Time', 'Modified Time'])
+
+    cols = {
+        'File Location': 'f_path',
+        'File Name': 'f_filename',
+        'Created Time': 'f_created_time',
+        'Modified Time': 'f_modified_time',
+        'File Size': 'f_filesize',
+        'File Status': 'f_file_status'
+    }
+    DI_db = DI.rename(columns=cols)
+    DI_db.insert(0, 'f_project_name', project_name)
+    DI_db.insert(1, 'f_updated_at', pd.to_datetime('now'))
+    print(f"Found {len(DI_db)} files on current files.")
+
+    q = f"""SELECT f_project_name,f_updated_at,f_path,f_filename,f_filesize,f_created_time,f_modified_time FROM tb_daftar_isi_rekap
+        WHERE f_project_name="{project_name}" ORDER BY f_updated_at DESC, f_path ASC """
+    DI_latest = pd.read_sql(q, con)
+    DI_latest = DI_latest.groupby('f_path').first().reset_index()
+    print(f"Found {len(DI_latest)} files on the latest Table of Contents.")
+
+    FileBaru = DI_db[[f not in DI_latest['f_path'].values for f in DI_db['f_path']]]
+    FileDeleted = DI_latest[[f not in DI_db['f_path'].values for f in DI_latest['f_path']]]
+    FileBaru['f_file_status'] = 1
+    FileDeleted['f_file_status'] = 2
+
+    DI_insert = FileBaru.append(FileDeleted, ignore_index=True)
+    DI_insert["f_updated_at"] = pd.to_datetime("now") + pd.to_timedelta("7h")
+    print(f"Inserting {len(DI_insert)} new recap ...")
+    if len(DI_insert)>0: 
+        DI_insert.to_sql('tb_daftar_isi_rekap', con, if_exists='append', index=False,)
+        return 'Insert success'
+    return 'No data to insert'
+
+# Old Services
+def old_home(data):
+    ret = {
+        'filename': '',
+        'filelist': {
+            'filename':[],
+            'filedate':[]
+        },
+        'filedate':{
+            'current':'',
+            'previous':'',
+        },
+        'contents':{
+            'columns': [],
+            'data': []
+        }
+    }
+
+    files = np.sort([f for f in os.listdir(old_excel_loc) if f.endswith('.xlsx')]).tolist()
+    Files = pd.DataFrame()
+    Files['Nama File'] = files
+
+    # Check latest data
+    tanggalfiles = [pd.to_datetime(f.split(' - ')[-1].split('.')[0]) for f in files]
+    Files['Tanggal File'] = tanggalfiles
+    Files = Files.sort_values('Tanggal File', ascending=False)
+    ret['filename'] = Files.iloc[0]['Nama File']
+    ret['filedate']['current'] = Files.iloc[0]['Tanggal File'].strftime('%Y-%m-%d %X')
+    ret['filedate']['previous'] = Files.iloc[1]['Tanggal File'].strftime('%Y-%m-%d %X')
+    ret['filelist']['filename'] = files
+    ret['filelist']['filedate'] = [f.strftime('%Y-%m-%d %X') for f in tanggalfiles]
+
+    CurrentFile = Files.iloc[0]['Nama File']
+    PreviousFile = Files.iloc[1]['Nama File']
+    if 'currentfile' in data.keys(): 
+        CurrentFile = data['currentfile']
+        ret['filedate']['current'] = pd.to_datetime(CurrentFile.split(' - ')[-1].split('.')[0]).strftime('%Y-%m-%d %X')
+    if 'previousfile' in data.keys(): 
+        PreviousFile = data['previousfile']
+        ret['filedate']['previous'] = pd.to_datetime(PreviousFile.split(' - ')[-1].split('.')[0]).strftime('%Y-%m-%d %X')
+    if pd.to_datetime(ret['filedate']['current']) < pd.to_datetime(ret['filedate']['previous']):
+        CurrentFile, PreviousFile = PreviousFile, CurrentFile
+        ret['filedate']['current'] = pd.to_datetime(CurrentFile.split(' - ')[-1].split('.')[0]).strftime('%Y-%m-%d %X')
+        ret['filedate']['previous'] = pd.to_datetime(PreviousFile.split(' - ')[-1].split('.')[0]).strftime('%Y-%m-%d %X')
+
+    File1 = pd.read_excel(os.path.join(old_excel_loc, CurrentFile))
+    File1 = File1.drop(columns=File1.columns[0])
+    File2 = pd.read_excel(os.path.join(old_excel_loc, PreviousFile))
+    File2 = File2.drop(columns=File2.columns[0])
+
+    Rekaps = File1.append(File2, ignore_index=True).drop_duplicates().reset_index(drop=True)
+    Rekaps['File Baru'] = [f not in (File2['Path'].values) for f in Rekaps['Path']]
+    Rekaps['File Lama Didelete'] = [f not in (File1['Path'].values) for f in Rekaps['Path']]
+    Rekaps = Rekaps[Rekaps[['File Baru','File Lama Didelete']].max(axis=1)]
+    Rekaps['Status'] = ['File baru' if f else 'Di delete' for f in Rekaps['File Baru']]
+    Rekaps = Rekaps.drop(columns=['File Baru','File Lama Didelete','File Size (bytes)'])
+
+    ret['contents']['columns'] = Rekaps.columns.to_list()
+    ret['contents']['data'] = Rekaps.to_dict(orient='records')
+    return ret
+
+def old_update():
+    path = '/mnt/disks/Others/Monitoring PJB Box/data/5 Assesment Unit Pembangkit Terkait Implementasi'
+    DaftarIsi = []
+
+    for r, fo, fi in os.walk(path):
+        for file in fi:
+            filepath = os.path.join(r, file)
+            filedir = filepath.replace(path,'')
+            fileext = file.split('.')[-1]
+            filemtime = pd.to_datetime(os.path.getmtime(filepath) * 1e9) + pd.to_timedelta('7h')
+            filesize = os.path.getsize(filepath)
+            filersize = convert_size(filesize)
+            DaftarIsi.append([filedir, file, fileext, filemtime, filesize, filersize])
+    DaftarIsi = pd.DataFrame(DaftarIsi, columns = ['Path','File Name', 'Extension','Last Modified','File Size (bytes)','Readable File Size'])
+    now = pd.to_datetime('now') + pd.to_timedelta('7h')
+    filename = f"Daftar Isi PJB Box SOKET3 - {now.strftime('%Y%m%d %H%M%S')}.xlsx"
+    DaftarIsi.to_excel(os.path.join(old_excel_loc, filename))
+
+    return f'File saved to {filename}'

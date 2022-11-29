@@ -35,9 +35,6 @@
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
         <li>
-          <span>URL: {{ request.url }}</span>
-        </li>
-        <li>
           <div class="search-bar">
             <form class="search-form d-flex align-items-center" method="POST" action="#">
               <input type="text" name="query" placeholder="Search" title="Enter search keyword">
@@ -59,8 +56,8 @@
           href="#"> <i class="fas fa-cloud me-2"></i><span>Drive Monitoring</span><i
             class="fas fa-chevron-down ms-auto"></i> </a>
         <ul id="components-nav" class="nav-content collapsed {% if 'DriveMonitoring' in request.url %}show{% endif %}" data-bs-parent="#sidebar-nav">
-          <li> <a href="/DriveMonitoring/PJBBox"> <i class="fas fa-bolt" style="width: 25px;"></i><span>PJB Box</span> </a></li>
-          <li> <a href="/DriveMonitoring/GdriveSML"> <i class="fab fa-google-drive" style="width: 25px;"></i><span>Google Drive SML</span> </a></li>
+          <li> <a href="/DriveMonitoring/PJB-Box-SOKET3"> <i class="fas fa-bolt" style="width: 25px;"></i><span>PJB Box</span> </a></li>
+          <li> <a href="/DriveMonitoring/Google-Drive-SOKET3"> <i class="fab fa-google-drive" style="width: 25px;"></i><span>Google Drive SML</span> </a></li>
         </ul>
       </li>
       <li class="nav-item"> <a class="nav-link {% if 'HistorianRecap' not in request.url %}collapsed{% endif %}" data-bs-target="#charts-nav" data-bs-toggle="collapse"
@@ -92,16 +89,16 @@
     integrity="sha512-rpLlll167T5LJHwp0waJCh3ZRf7pO6IT1+LZOhAyP6phAirwchClbTZV3iqL3BMrVxIYRbzGTpli4rfxsCK6Vw=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://unpkg.com/bootstrap-table@1.21.1/dist/bootstrap-table.min.js"></script>
-  <script>
-    console.log('ready');
-    $(".toggle-sidebar-btn").click(function () {
-        $("body").toggleClass("toggle-sidebar");
-    })
-    console.log('ready for real');
-  </script>
   {% block scripts %}
     
   {% endblock scripts %}
+
+  
+  <script>
+    $(".toggle-sidebar-btn").click(function () {
+        $("body").toggleClass("toggle-sidebar");
+    })
+  </script>
 </body>
 
 </html>
