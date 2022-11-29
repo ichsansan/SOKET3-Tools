@@ -4,8 +4,9 @@ import os, re, time, config
 from sqlalchemy import create_engine
 from urllib.parse import quote
 
-con = 'mysql+mysqlconnector://smlds:SMLds2021!@35.219.48.62/db_soket3'
+con = 'mysql+mysqlconnector://smlds:SMLds2021!@0.0.0.0/db_soket3'
 box_link = 'https://box.ptpjb.com/s/eJBGmz4d3ykZso2'
+timezone = 7
 
 def convert_size(number):
     suffix = ['','K','M','G','T','P']
@@ -29,7 +30,7 @@ def get_service_pjbboxcompare(data=None, datestart=None, dateend=None):
     project_name = 'PJB Box SOKET3'
 
     if (datestart is None) and (dateend is None):
-        datestart, dateend = pd.to_datetime('now').floor('d'), pd.to_datetime('now')
+        datestart, dateend = pd.to_datetime('now').floor('d'), pd.to_datetime('now') + pd.to_timedelta(f"{timezone}h")
     else:
         datestart = pd.to_datetime(datestart).strftime('%Y-%m-%d %X')
         dateend = pd.to_datetime(dateend).strftime('%Y-%m-%d %X')
@@ -39,24 +40,20 @@ def get_service_pjbboxcompare(data=None, datestart=None, dateend=None):
     if 'daterange' in data.keys():
         if data['daterange'] == 'TODAY':
             datestart = pd.to_datetime('now').floor('d')
-            dateend = pd.to_datetime('now')
+            dateend = pd.to_datetime('now') + pd.to_timedelta(f"{timezone}h")
         else:
             datestart = pd.to_datetime('now').floor('d') - pd.to_timedelta(data['daterange'])
-            dateend = pd.to_datetime('now')
+            dateend = pd.to_datetime('now') + pd.to_timedelta(f"{timezone}h")
 
-    cols = ['f_project_name', 'f_updated_at', 'f_path', 'f_filename','f_created_time', 'f_modified_time', 'f_filesize','f_file_status']
-    cols = {
-        'f_path': 'File Location',
-        'f_filename': 'File Name',
-        'f_modified_time': 'Modified Time',
-        'f_filesize': 'File Size',
-        'f_file_status': 'File Status'
-    }
-    DI = pd.read_sql(f"""SELECT {','.join(cols.keys())} FROM tb_daftar_isi_rekap 
+    cols = config.project[project_name]['table_rename']
+    cols = np.array(list(config.project[project_name]['table_rename'].values()))[np.argwhere([f is not None for f in cols.values()]).reshape(-1)].tolist()
+
+    # TODO: Perbaiki variabel cols
+    DI = pd.read_sql(f"""SELECT {','.join(cols)} FROM tb_daftar_isi_rekap 
                         WHERE f_project_name = "{project_name}" 
                         AND f_updated_at BETWEEN "{datestart}"
                         AND "{dateend}" """, engine)
-    DI = DI.rename(columns=cols)
+    DI = DI.rename(columns=config.project[project_name]['table_rename'])
     DI.insert(0, 'Unit', [f.split('/')[0] for f in DI['File Location']])
     DI['File Location'] = [f"/{f[0].replace(f[1],'')}" for f in DI[['File Location','File Name']].values]
     DI['File Status'] = [f"<span class='badge bg-primary'>File baru</span>" if f == 1 else f"<span class='badge bg-danger'>File didelete</span>" for f in DI['File Status']]
@@ -95,16 +92,21 @@ def get_service_perubahan_daftarisi(data = {}):
     engine = create_engine(con)
     project_name = 'PJB Box SOKET3'
     datestart = pd.to_datetime('now').floor('d')
-    dateend = pd.to_datetime('now')
+    dateend = pd.to_datetime('now') + pd.to_timedelta(f"{timezone}h")
     daterange = None
     if 'project_name' in data.keys(): project_name = data['project_name']
     if 'datestart' in data.keys(): datestart = pd.to_datetime(data['datestart'])
     if 'dateend' in data.keys(): dateend = pd.to_datetime(data['dateend'])
     if 'daterange' in data.keys(): daterange = data['daterange']
 
+    time.sleep(np.random.randint(10) / 100)
+    print(f"Get service perubahan daftar isi:", project_name, datestart, dateend, daterange)
+
     if daterange is not None:
         if daterange != 'Today':
             datestart = dateend - pd.to_timedelta(daterange)
+
+    cols = {k:v for k,v in config.project[project_name]['table_rename'].items() if v is not None}
 
     Data = pd.read_sql( f"""SELECT f_filename, f_filesize, f_path, f_modified_time, f_updated_at, f_file_status FROM tb_daftar_isi_rekap 
                             WHERE f_project_name = "{project_name}" AND f_updated_at BETWEEN "{datestart.strftime('%Y-%m-%d %X')}" AND "{dateend.strftime('%Y-%m-%d %X')}"
@@ -114,13 +116,18 @@ def get_service_perubahan_daftarisi(data = {}):
                                 'f_path': 'File Location', 'f_modified_time':'Modified Time', 
                                 'f_updated_at':'Updated Time', 'f_file_status':'File Status'})
 
-    Data.insert(0, 'Unit', [f.split('/')[0] for f in Data['File Location']])
+    Data.insert(0, 'Path', [f.split('/')[0] for f in Data['File Location']])
     Data['File Location'] = [f"/{f[0].replace(f[1],'')}" for f in Data[['File Location','File Name']].values]
     Data['File Status'] = [f"<span class='badge bg-primary'>File baru</span>" if f == 1 else f"<span class='badge bg-danger'>File didelete</span>" for f in Data['File Status']]
-    Data['Link'] = [f"""<a href='{box_link}?path={quote(f)}' target="_blank" rel="noopener noreferrer"><i class='fas fa-up-right-from-square'></i></a>""" for f in Data['File Location']]
+    if project_name == 'PJB Box SOKET3':
+        Data['Link'] = [f"""<a href='{box_link}?path={quote(f)}' target="_blank" rel="noopener noreferrer"><i class='fas fa-up-right-from-square'></i></a>""" for f in Data['File Location']]
     Data['File Size'] = [convert_size(int(f)) for f in Data['File Size']]
-    Data = Data.drop(columns=['File Location'])
+    Data['Path'] = [f"""<span title="{l}" data-bs-placement="bottom">{p}/... </span> """ for p,l in Data[['Path','File Location']].values]
     
+    Data = Data.drop(columns=['File Location','Modified Time'])
+    
+    ret['datestart'] = datestart
+    ret['dateend'] = dateend
     ret['columns'] = list(Data.columns)
     ret['content'] = Data.astype(str).to_dict(orient='records')
     return ret
@@ -191,7 +198,7 @@ def update_daftar_isi(project_name='PJB Box SOKET3'):
     }
     DI_db = DI.rename(columns=cols)
     DI_db.insert(0, 'f_project_name', project_name)
-    DI_db.insert(1, 'f_updated_at', pd.to_datetime('now'))
+    DI_db.insert(1, 'f_updated_at', pd.to_datetime('now') + pd.to_timedelta(f"{timezone}h"))
     print(f"Found {len(DI_db)} files on current files.")
 
     q = f"""SELECT f_updated_at,f_path,f_filename,f_created_time,f_modified_time FROM tb_daftar_isi_rekap

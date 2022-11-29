@@ -35,6 +35,9 @@
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
         <li>
+          <span>URL: {{ request.url }}</span>
+        </li>
+        <li>
           <div class="search-bar">
             <form class="search-form d-flex align-items-center" method="POST" action="#">
               <input type="text" name="query" placeholder="Search" title="Enter search keyword">
@@ -52,15 +55,15 @@
       <li class="nav-item"> <a class="nav-link " href="/"> <i class="fas fa-tv me-2"></i> <span>Dashboard</span>
         </a></li>
       <li class="nav-heading">Pages</li>
-      <li class="nav-item"> <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse"
+      <li class="nav-item"> <a class="nav-link {% if 'DriveMonitoring' not in request.url %}collapsed{% endif %}" data-bs-target="#components-nav" data-bs-toggle="collapse"
           href="#"> <i class="fas fa-cloud me-2"></i><span>Drive Monitoring</span><i
             class="fas fa-chevron-down ms-auto"></i> </a>
-        <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="components-nav" class="nav-content collapsed {% if 'DriveMonitoring' in request.url %}show{% endif %}" data-bs-parent="#sidebar-nav">
           <li> <a href="/DriveMonitoring/PJBBox"> <i class="fas fa-bolt" style="width: 25px;"></i><span>PJB Box</span> </a></li>
           <li> <a href="/DriveMonitoring/GdriveSML"> <i class="fab fa-google-drive" style="width: 25px;"></i><span>Google Drive SML</span> </a></li>
         </ul>
       </li>
-      <li class="nav-item"> <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse"
+      <li class="nav-item"> <a class="nav-link {% if 'HistorianRecap' not in request.url %}collapsed{% endif %}" data-bs-target="#charts-nav" data-bs-toggle="collapse"
           href="#"> <i class="fas fa-chart-simple me-2"></i><span>Historian Recap</span><i class="fas fa-chevron-down ms-auto"></i> </a>
         <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li> <a href="/HistorianRecap/PLTU-Paiton-9"> <i class="far fa-xs fa-circle me-2"></i><span>PLTU Paiton 9</span> </a></li>
