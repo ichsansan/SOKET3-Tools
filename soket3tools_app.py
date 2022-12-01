@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, flash, send_file
+from flask import Flask, render_template, jsonify, request, flash, send_file, redirect
 from servicehandler import *
 import pandas as pd
 import numpy as np
@@ -9,6 +9,10 @@ app.secret_key = "e236c78afcb9a393ec15f71bbf5dc987d547278"
 
 @app.route('/')
 def home():
+    return redirect('/Dashboard')
+
+@app.route('/Dashboard')
+def dashboard():
     data = {}
     return render_template('Homepage.html', data = data)
 
@@ -27,7 +31,7 @@ def old_home():
     try:
         data = dict(request.values)
         print('Data request: ', data)
-        ret = old_home(data)
+        ret = services_old_home(data)
 
     except Exception as E:
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -67,14 +71,14 @@ def download(filename: str):
     return send_file(filename, as_attachment=True)
 
 @app.route('/old-update')
-def update():
+def old_update():
     ret = {
         'status':'Failed',
         'message':''
     }
 
     try:
-        ret['message'] = old_update()
+        ret['message'] = services_old_update()
         ret['status'] = 'Success'
     except Exception as E:
         ret['message'] = str(E)
@@ -88,7 +92,8 @@ def service_pjbbox_compare():
         'message': '',
     }
     data = {}
-    for k in ['project_name','datestart','dateend','daterange']:
+    for k in ['project_name','datestart','dateend','daterange',
+              'nlimit','npage']:
         val = request.args.get(k, default=None, type=str)
         if val: data[k] = val
     
@@ -188,4 +193,4 @@ def service_historian_daily_availability(unit):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5005, debug=False)
+    app.run(host='0.0.0.0', port=5005, debug=True)

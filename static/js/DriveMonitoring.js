@@ -5,7 +5,20 @@ $(".toggle-sidebar-btn").click(function () {
 function dict_to_table(data, Element) {
     let col = data.columns;
     let content = data.content;
-    console.log(col);
+    let page = 0;
+    let limit = 0;
+    let total = 0;
+    
+    if ('page' in data.pagination){
+        page = data.pagination.page;
+    }
+    if ('limit' in data.pagination){
+        limit = data.pagination.limit;
+    }
+    if ('total' in data.pagination){
+        total = data.pagination.total;
+    }
+    
 
     // Create table.
     const table = document.createElement("table");
@@ -36,20 +49,31 @@ function dict_to_table(data, Element) {
             }
         }
     }
+
+    // Create number of pages
+    for (let i = 0; i < parseInt(total/limit); i++) {
+        const element = parseInt(total/limit);
+    }
+
+    // Create pagination elements
+    const nav = document.createElement('nav');
+    let ul = document.createElement('ul');
+    ul.className = "pagination justify-content-center";
+
     
     // Now, add the newly created table with json data, to a container.
     Element.innerHTML = "";
     Element.appendChild(table);
 }
 
-function refreshDaftarIsi(element_name, project_name, periods) {
+function refreshDaftarIsi(element_name, project_name, periods, nlimit, npage) {
     document.getElementById(element_name).innerHTML = "<div class=\"text-center h-100\" style=\"transform: translateY(40%);\"><i class=\"fas fa-3x fa-spinner fa-spin-pulse fa-spin-reverse\"></i></div>"
     $("#" + element_name).prev().children()[0].innerHTML = "/ " + periods;
 
     $.ajax({
         type: "get",
         url: "/services/daftar-isi/compare",
-        data: {'project_name':project_name, 'daterange':periods},
+        data: {'project_name':project_name, 'daterange':periods, nlimit:nlimit, npage:npage},
         success: function (response) {
             var Element = document.getElementById(element_name);
             try {

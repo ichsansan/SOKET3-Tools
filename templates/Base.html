@@ -30,7 +30,7 @@
         <img src="/static/css/img/logo.png" alt="">
         <span class="d-none h3 d-lg-block">SOKET 3 Tools</span>
       </a>
-      <i class="fas fa-bars toggle-sidebar-btn"></i>
+      <i class="fas fa-bars toggle-sidebar-btn" onclick="sidebar_toggling()"></i>
     </div>
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
@@ -49,20 +49,20 @@
   </header>
   <aside id="sidebar" class="sidebar">
     <ul class="sidebar-nav" id="sidebar-nav">
-      <li class="nav-item"> <a class="nav-link " href="/"> <i class="fas fa-tv me-2"></i> <span>Dashboard</span>
+      <li class="nav-item"> <a class="nav-link {% if 'Dashboard' not in request.url %}collapsed{% endif %}" href="/Dashboard"> <i class="fas fa-tv me-2"></i> <span>Dashboard</span>
         </a></li>
       <li class="nav-heading">Pages</li>
       <li class="nav-item"> <a class="nav-link {% if 'DriveMonitoring' not in request.url %}collapsed{% endif %}" data-bs-target="#components-nav" data-bs-toggle="collapse"
           href="#"> <i class="fas fa-cloud me-2"></i><span>Drive Monitoring</span><i
             class="fas fa-chevron-down ms-auto"></i> </a>
         <ul id="components-nav" class="nav-content collapsed {% if 'DriveMonitoring' in request.url %}show{% endif %}" data-bs-parent="#sidebar-nav">
-          <li> <a href="/DriveMonitoring/PJB-Box-SOKET3"> <i class="fas fa-bolt" style="width: 25px;"></i><span>PJB Box</span> </a></li>
+          <li> <a href="/DriveMonitoring/PJB-Box-SOKET3" class="collapsed"> <i class="fas fa-bolt" style="width: 25px;"></i><span>PJB Box</span> </a></li>
           <li> <a href="/DriveMonitoring/Google-Drive-SOKET3"> <i class="fab fa-google-drive" style="width: 25px;"></i><span>Google Drive SML</span> </a></li>
         </ul>
       </li>
       <li class="nav-item"> <a class="nav-link {% if 'HistorianRecap' not in request.url %}collapsed{% endif %}" data-bs-target="#charts-nav" data-bs-toggle="collapse"
           href="#"> <i class="fas fa-chart-simple me-2"></i><span>Historian Recap</span><i class="fas fa-chevron-down ms-auto"></i> </a>
-        <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <ul id="charts-nav" class="nav-content  {% if 'HistorianRecap' not in request.url %}showe{% endif %}" data-bs-parent="#sidebar-nav">
           <li> <a href="/HistorianRecap/PLTU-Paiton-9"> <i class="far fa-xs fa-circle me-2"></i><span>PLTU Paiton 9</span> </a></li>
           <li> <a href="/HistorianRecap/PLTU-Pulang-Pisau"> <i class="far fa-xs fa-circle me-2"></i><span>PLTU Pulang Pisau</span> </a></li>
           <li> <a href="/HistorianRecap/PLTU-Kendari"> <i class="far fa-xs fa-circle me-2"></i><span>PLTU Kendari</span> </a></li>
@@ -98,6 +98,10 @@
     $(".toggle-sidebar-btn").click(function () {
         $("body").toggleClass("toggle-sidebar");
     })
+
+    function sidebar_toggling() {
+      $("body").toggleClass("toggle-sidebar");
+    }
   </script>
 </body>
 

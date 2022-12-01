@@ -4,9 +4,10 @@ import os, re, time, config
 from sqlalchemy import create_engine
 from urllib.parse import quote
 
-con = 'mysql+mysqlconnector://smlds:SMLds2021!@0.0.0.0/db_soket3'
+con = 'mysql+mysqlconnector://smlds:SMLds2021!@35.219.48.62/db_soket3'
 box_link = 'https://box.ptpjb.com/s/eJBGmz4d3ykZso2'
 old_excel_loc = '/mnt/disks/Others/Monitoring PJB Box/data/Excel Recap/'
+old_box_loc = '/mnt/disks/Others/Monitoring PJB Box/data/5 Assesment Unit Pembangkit Terkait Implementasi/'
 timezone = 7
 
 def convert_size(number):
@@ -95,17 +96,28 @@ def get_service_perubahan_daftarisi(data = {}):
     datestart = pd.to_datetime('now').floor('d')
     dateend = pd.to_datetime('now') + pd.to_timedelta(f"{timezone}h")
     daterange = None
+    total, limit, page = (0,0,0)
     if 'project_name' in data.keys(): project_name = data['project_name']
     if 'datestart' in data.keys(): datestart = pd.to_datetime(data['datestart'])
     if 'dateend' in data.keys(): dateend = pd.to_datetime(data['dateend'])
     if 'daterange' in data.keys(): daterange = data['daterange']
+    if 'nlimit' in data.keys(): limit = data['nlimit']
+    if 'npage' in data.keys(): page = data['npage']
 
-    time.sleep(np.random.randint(10) / 100)
+    time.sleep(np.random.randint(10) / 1000)
     print(f"Get service perubahan daftar isi:", project_name, datestart, dateend, daterange)
 
     if daterange is not None:
         if daterange != 'Today':
             datestart = dateend - pd.to_timedelta(daterange)
+
+    # Pagination
+    l1 = 0; l2 = 100; LIMIT = ""
+    if bool(page) or bool(limit):
+        page = max([int(page),0]); limit = int(limit)
+        l1 = (page) * limit
+        l2 = (page+1) * limit
+        LIMIT = f"LIMIT {l1},{l2}"
 
     cols = {k:v for k,v in config.project[project_name]['table_rename'].items() if v is not None}
 
@@ -126,11 +138,21 @@ def get_service_perubahan_daftarisi(data = {}):
     Data['Path'] = [f"""<span title="{l}" data-bs-placement="bottom">{p}/... </span> """ for p,l in Data[['Path','File Location']].values]
     
     Data = Data.drop(columns=['File Location','Modified Time'])
+
+    # Paging
+    total = len(Data)
+    Data_page = Data.iloc[l1:l2]
     
     ret['datestart'] = datestart
     ret['dateend'] = dateend
-    ret['columns'] = list(Data.columns)
-    ret['content'] = Data.astype(str).to_dict(orient='records')
+    ret['columns'] = list(Data_page.columns)
+    ret['content'] = Data_page.astype(str).to_dict(orient='records')
+    ret['pagination'] = {
+        'total': total,
+        'page': page,
+        'limit': limit
+    }
+    print(ret['pagination'])
     return ret
 
 def get_service_recent_activity(data):
@@ -243,7 +265,7 @@ def update_daftar_isi(project_name='PJB Box SOKET3'):
     return ret
 
 def update_daftar_isi():
-    PATH = '/mnt/disks/Others/Monitoring PJB Box/data/5 Assesment Unit Pembangkit Terkait Implementasi'
+    PATH = old_box_loc
     project_name = "PJB Box SOKET3"
 
     DI = []
@@ -291,7 +313,7 @@ def update_daftar_isi():
     return 'No data to insert'
 
 # Old Services
-def old_home(data):
+def services_old_home(data):
     ret = {
         'filename': '',
         'filelist': {
@@ -351,8 +373,8 @@ def old_home(data):
     ret['contents']['data'] = Rekaps.to_dict(orient='records')
     return ret
 
-def old_update():
-    path = '/mnt/disks/Others/Monitoring PJB Box/data/5 Assesment Unit Pembangkit Terkait Implementasi'
+def services_old_update():
+    path = old_box_loc
     DaftarIsi = []
 
     for r, fo, fi in os.walk(path):

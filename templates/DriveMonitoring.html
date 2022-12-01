@@ -47,7 +47,7 @@
               </ul>
             </div>
             <div class="card-body">
-              <h5 class="card-title">PJB Box Table of Contents <span>/ Today</span></h5>
+              <h5 class="card-title">{{project_name.replace(' SOKET3','')}} Table of Contents <span>/ Today</span></h5>
               <div id="allReports" class="overflow-auto" style="min-height: 100px; max-height: 600px;">
                 <div class="text-center h-100" style="transform: translateY(40%);">
                   <i class="fas fa-3x fa-spin-pulse fa-spinner"></i>
@@ -105,8 +105,8 @@
 <script>
   $(document).ready(function () {
     console.log("Project name: {{project_name}}")
-    refreshDaftarIsi('shortReports', '{{project_name}}','Today');
-    refreshDaftarIsi('allReports', '{{project_name}}', '60 Day');
+    refreshDaftarIsi('shortReports', '{{project_name}}','Today', 100, 0);
+    refreshDaftarIsi('allReports', '{{project_name}}', '60 Day', 100, 0);
     refreshRecentActivity('recentActivity', '{{project_name}}');
   });
 </script>
