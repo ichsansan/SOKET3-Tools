@@ -38,18 +38,21 @@ function dict_to_table(content, ElementID) {
     Element.appendChild(table);
 }
 
-function getTagLists(unit){
+function getTagLists(unit) {
     console.log('Getting tag lists from ', unit);
     $.ajax({
         type: "get",
-        url: "/services/historian-recap/" + unit,
+        url: "/services/historian-recap/taglists/" + unit,
         success: function (response) {
             // var Element = document.getElementById('reportsChart');
             console.log(response);
             if (response.status == 'success') {
                 var content = response.content;
-                
+                content.forEach(line => {
+                    line["Add"] = `<button class="btn btn-light btn-sm rounded-5" onclick="addTags('${line['TagName']}')"><i class="fas fa-plus"/></button>`
+                });
                 dict_to_table(content, 'tagLists');
+
             }
             else {
                 console.log('Failed');
@@ -58,7 +61,7 @@ function getTagLists(unit){
     });
 };
 
-function getTagRecap(unit){
+function getTagRecap(unit) {
     console.log('Getting tag recap from ', unit);
     $.ajax({
         type: "get",
@@ -68,7 +71,7 @@ function getTagRecap(unit){
             console.log(response);
             if (response.status == 'success') {
                 var content = response.content;
-                
+
                 document.getElementById('tagcount').innerHTML = content['tagcount'];
                 document.getElementById('startdate').innerHTML = content['startdate'];
                 document.getElementById('enddate').innerHTML = content['enddate'];
@@ -78,34 +81,74 @@ function getTagRecap(unit){
             }
         }
     });
+};
 
-    console.log('Getting daily availability from ', unit);
+function plotTag(unit) {
+    var tagname = document.getElementById('tagName').value;
+    var realtimeData = document.getElementById('realtimeData');
+    var realtimeDataHTML = document.getElementById('realtimeDataHTML');
+
+    realtimeData.innerHTML = `<div class="text-center"><i class="fas fa-3x fa-spinner fa-spin-pulse"></i></div>`;
+    console.log(`Getting tag ${tagname} from unit ${unit}`);
+
     $.ajax({
         type: "get",
-        url: "/services/historian-daily-availability/" + unit,
+        url: `/services/historian-recap/plot/${unit}/${tagname}`,
         success: function (response) {
             console.log(response);
-            if (response.status == 'success') {
-                let content = response.content;
-                let table = document.createElement('table');
-                table.className = 'table table-hover table-sm table-borderless';
-
-                for (const key in content) {
-                    let tr = table.insertRow(-1);
-                    let th = document.createElement('th');
-                    th.innerHTML = key;
-                    tr.appendChild(th);
-                    
-                    let td = document.createElement('td');
-                    td.innerHTML = parseFloat(content[key]).toPrecision(2) + " %";
-                    tr.appendChild(td);
-                }
-                document.getElementById('dailyAvailability').innerHTML = "";
-                document.getElementById('dailyAvailability').appendChild(table);
-            }
-            else {
-                console.log('Failed');
-            }
+            realtimeDataHTML.innerHTML = response['content'][''];
+            // realtimeData.innerHTML = `<iframe src="/${response['content']['figure_loc']}" style="min-height: 400px; width: 100%;></iframe>`;
         }
     });
-};
+}
+
+function addTags(tag) {
+    var Window = document.getElementById('tagsWindow');
+    var tagSelected = [];
+    console.log(tag);
+
+    $.each($('#tagsWindow').children(), function (i, el) {
+        tagSelected.push(el.id);
+    });
+    if (!(tagSelected.includes(`tag-${tag}`))) {
+        Window.innerHTML += `<button type="button" class="btn btn-sm btn-light rounded-5 tags-item" id="tag-${tag}" tagname="${tag}" onclick="delTags(this)">${tag}</button>`
+        $(`[onclick*=addTags][onclick*=${tag}]`).each(function (i, element) {
+            if (!$(element).hasClass('selected')) {
+                $(element).addClass('selected');
+            }
+        });
+    }
+}
+function delTags(element) {
+    console.log('Deleting', element.getAttribute('tagname'));
+    var id = String(element.getAttribute('tagname'));
+    element.remove();
+    console.log('Deleting', id);
+
+    $(`[onclick*=addTags][onclick*=${id}]`).each(function (i, e) {
+        $(e).removeClass('selected');
+    });
+}
+
+function validateTags(mode = 'plot') {
+    var tagSelected = [];
+    $.each($('#tagsWindow').children(), function (i, el) {
+        tagSelected.push(el.id.replace('tag-', ''));
+    });
+    if ((tagSelected.length > 10) & (mode == 'plot')) {
+        alert('Cuma bisa ngeplot 10 tag. Coba dikurangi lagi.');
+    } else if (tagSelected.length == 0) {
+        alert('Pilih tag untuk diplot');
+    } else {
+        var redirectUrl = window.location.origin + window.location.pathname;
+        var payload = {
+            "tags": tagSelected.join(',')
+        };
+        var queryString = Object.keys(payload).map(function (key) {
+            return key + '=' + payload[key];
+        }).join('&');
+
+        console.log(`Redirecting to: "${redirectUrl}?${queryString}"`);
+        window.location = `${redirectUrl}?${queryString}`;
+    }
+}

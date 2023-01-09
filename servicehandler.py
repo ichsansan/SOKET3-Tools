@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-import os, re, time, config
+import plotly.express as px
+import os, re, time, config, random, string
 from sqlalchemy import create_engine
 from urllib.parse import quote
 
@@ -181,7 +182,7 @@ def get_service_taglists(unit):
     unit = unit.replace('-', ' ')
     tb_im_tags = config.tables[unit]['tb_im_tags']
 
-    Data = pd.read_sql( f"""SELECT f_tag_name AS TagName1, f_tag_name_alt1 AS TagName2, f_description AS Description 
+    Data = pd.read_sql( f"""SELECT f_tag_name AS TagName, f_tag_name_alt1 AS TagAlt
                             FROM historian.{tb_im_tags} ORDER BY f_tag_name ASC """, con)
     ret = Data.astype(str).to_dict(orient='records')
     return ret
@@ -312,6 +313,39 @@ def update_daftar_isi():
         return 'Insert success'
     return 'No data to insert'
 
+def plot_tags(unit, tags):
+    unit = unit.replace('-', ' ')
+    tags = tags.split(',')
+
+    ret = {
+        'unit': unit,
+        'tags': tags,
+        'figure': ''
+    }
+    
+    im_tags = 'historian.' + config.tables[unit]['tb_im_tags']
+    history = 'historian.' + config.tables[unit]['tb_history']
+
+    with create_engine(con).connect() as conn:
+        q = f"SELECT MIN(f_date_rec), MAX(f_date_rec) FROM {history}"
+        mi, ma = pd.to_datetime(pd.read_sql(q, conn).values[0])
+        q = f"""SELECT IM.f_tag_name AS `TagName`, H.f_date_rec AS `timestamp`, H.f_value AS `Values` FROM {im_tags} IM 
+                LEFT JOIN {history} H 
+                ON IM.f_id = H.f_tag_id 
+                WHERE IM.f_tag_name IN {tuple(tags)}
+                AND f_value IS NOT NULL
+                AND f_date_rec > ("{ma}" - INTERVAL 30 DAY) """
+        DF = pd.read_sql(q, conn)
+        DF = DF.pivot_table(index='timestamp', columns='TagName', values='Values')
+        DF = DF.resample('1min').mean()
+
+    fig = px.line(DF)
+    fig.update_layout(
+        hovermode='x'
+    )
+    ret['figure'] = fig.to_html(include_plotlyjs="/static/js/vendor/plotly.js", full_html=False, default_height=400)
+    return ret
+
 # Old Services
 def services_old_home(data):
     ret = {
@@ -392,3 +426,32 @@ def services_old_update():
     DaftarIsi.to_excel(os.path.join(old_excel_loc, filename))
 
     return f'File saved to {filename}'
+
+def bg_service_historian_recap_plot_tag(unit, tagname):
+    ret = {
+        'unit': unit,
+        'tagname': tagname
+    }
+
+    filename = f"static/figures/temp-{''.join([random.choice(string.hexdigits) for i in range(16)]).lower()}.html"
+
+    tb_history = config.tables[unit.replace('-',' ')]['tb_history']
+    tb_im_tags = config.tables[unit.replace('-',' ')]['tb_im_tags']
+
+    q = f"""SELECT I.f_tag_name, H.f_date_rec, H.f_value FROM historian.{tb_history} H
+        LEFT JOIN historian.{tb_im_tags} I
+        ON H.f_tag_id = I.f_id
+        WHERE I.f_tag_name = "{tagname}"
+        ORDER BY H.f_date_rec DESC
+        LIMIT 100 """
+    df = pd.read_sql(q, con)
+    df = df.pivot_table(index='f_date_rec', columns='f_tag_name', values='f_value')
+
+    fig = px.line(df)
+    fig.update_layout(hovermode='x')
+    fig.write_html(filename, include_plotlyjs="cdn")
+
+    ret['figure'] = fig.to_html(include_plotlyjs='cdn', full_html=True)
+    ret['figure_loc'] = filename
+    
+    return ret

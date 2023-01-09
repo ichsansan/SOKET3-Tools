@@ -21,9 +21,21 @@ def pjbbox(project_name):
     project_name = project_name.replace('-',' ')
     return render_template('DriveMonitoring.html', project_name=project_name)
 
-@app.route('/HistorianRecap/<unit>')
+@app.route('/HistorianRecap/<unit>', methods=['GET','POST'])
 def HistorianRecap(unit):
-    return render_template('HistorianRecap.html', unit=unit, title=f"Historian Recap - {unit}")
+    res = dict(request.values)
+    ret = {
+        'status': 'Success',
+        'message': '',
+        'data': {}
+    }
+    
+    if 'tags' in res.keys():
+        try:
+            ret['data'] = plot_tags(unit, res['tags'])
+        except Exception as E:
+            ret['message'] = f"Error `{E}`"
+    return render_template('HistorianRecap.html', unit=unit, title=f"Historian Recap - {unit}", ret=ret)
 
 ################### OLD ###################
 @app.route('/old')
@@ -152,7 +164,7 @@ def service_daftar_isi_update():
         ret['message'] = str(E)
     return jsonify(ret)
 
-@app.route('/services/historian-recap/<unit>')
+@app.route('/services/historian-recap/taglists/<unit>')
 def service_historian_taglist(unit):
     ret = {
         'status': 'failed',
@@ -163,6 +175,62 @@ def service_historian_taglist(unit):
         ret['status'] = 'success'
     except Exception as E:
         ret['message'] = str(E)
+
+    # ret = {
+    #     "content": [
+    #         {
+    #         "Description": "None", 
+    #         "TagName": "10-BFPA-PRCTRL-OUT", 
+    #         "TagAlt": "10-BFPA-PRCTRL-OUT.DROP2/52.UNIT1@NET2.AV"
+    #         }, 
+    #         {
+    #         "Description": "None", 
+    #         "TagName": "10-BFPA-PRCTRL-OUT", 
+    #         "TagAlt": "10-BFPA-PRCTRL-OUT.UNIT1@NET2.AV"
+    #         }, 
+    #         {
+    #         "Description": "None", 
+    #         "TagName": "10-BFPA-PRCTRL-SP", 
+    #         "TagAlt": "10-BFPA-PRCTRL-SP.DROP2/52.UNIT1@NET2.AV"
+    #         }, 
+    #         {
+    #         "Description": "None", 
+    #         "TagName": "10-BFPA-PRCTRL-SP", 
+    #         "TagAlt": "10-BFPA-PRCTRL-SP.UNIT1@NET2.AV"
+    #         }, 
+    #         {
+    #         "Description": "None", 
+    #         "TagName": "10-BFPB-PRCTRL-OUT", 
+    #         "TagAlt": "10-BFPB-PRCTRL-OUT.DROP2/52.UNIT1@NET2.AV"
+    #         }, 
+    #         {
+    #         "Description": "None", 
+    #         "TagName": "10-BFPB-PRCTRL-OUT", 
+    #         "TagAlt": "10-BFPB-PRCTRL-OUT.UNIT1@NET2.AV"
+    #         }, 
+    #         {
+    #         "Description": "None", 
+    #         "TagName": "10-BFPB-PRCTRL-SP", 
+    #         "TagAlt": "10-BFPB-PRCTRL-SP.DROP2/52.UNIT1@NET2.AV"
+    #         }, 
+    #         {
+    #         "Description": "None", 
+    #         "TagName": "10-BFPB-PRCTRL-SP", 
+    #         "TagAlt": "10-BFPB-PRCTRL-SP.UNIT1@NET2.AV"
+    #         }, 
+    #         {
+    #         "Description": "None", 
+    #         "TagName": "10-LROPENREVALVE1", 
+    #         "TagAlt": "10-LROPENREVALVE1"
+    #         }, 
+    #         {
+    #         "Description": "None", 
+    #         "TagName": "10-LROPENREVALVE2", 
+    #         "TagAlt": "10-LROPENREVALVE2"
+    #         }], 
+    #     "message": "", 
+    #     "status": "success"
+    # }
     return jsonify(ret)
 
 @app.route('/services/historian-tag-recap/<unit>')
@@ -191,6 +259,18 @@ def service_historian_daily_availability(unit):
         ret['message'] = str(E)
     return jsonify(ret)
 
+@app.route('/services/historian-recap/plot/<unit>/<tagname>')
+def service_historian_recap_plot_tag(unit, tagname):
+    ret = {
+        'status': 'failed',
+        'message': '',
+    }
+    try:
+        ret['content'] = bg_service_historian_recap_plot_tag(unit, tagname)
+        ret['status'] = 'success'
+    except Exception as E:
+        ret['message'] = str(E)
+    return jsonify(ret)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5005, debug=True)
+    app.run(port=5005, debug=True)

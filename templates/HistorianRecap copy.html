@@ -1,7 +1,5 @@
 {% extends 'Base.html' %}
 {% block mainpage %}
-<link rel="stylesheet" href="/static/css/HistorianRecap.css">
-
 <div class="pagetitle">
   <h1>Rekap {{ unit }}</h1>
   <nav>
@@ -18,19 +16,11 @@
         <div class="col-12">
           <div class="card reports">
             <div class="card-body">
-              <h5 class="card-title">Tag Lists <span>/ {{ unit }}</span></h5>
-              <div class="mb-3">
-                <label for="tagsWindow" class="form-label">Tags selected:</label>
-                <div class="form-control" id="tagsWindow" rows="3" readonly>
-                </div>
-              </div>
-              <div id="tagLists" class="overflow-auto">
+              <h5 class="card-title">Daily Availability <span>/ {{ unit }}</span></h5>
+              <div id="dailyAvailability" class="overflow-auto" style="min-height: 130px; max-height: 745px;">
                 <div class="text-center h-100" style="transform: translateY(40%);">
                   <i class="fas fa-3x fa-spinner fa-spin-pulse"></i>
                 </div>
-              </div>
-              <div class="d-grid mt-2 mb-2">
-                <button class="btn btn-success" onclick="validateTags()">Plot</button>
               </div>
             </div>
           </div>
@@ -68,17 +58,14 @@
         <div class="col-12">
           <div class="card reports">
             <div class="card-body">
-
+              <h5 class="card-title">Tag Lists <span>/ {{ unit }}</span></h5>
+              <div id="tagLists" class="overflow-auto" style="min-height: 130px; max-height: 500px;">
+                <div class="text-center h-100" style="transform: translateY(40%);">
+                  <i class="fas fa-3x fa-spinner fa-spin-pulse"></i>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-12">
-      <div class="card reports">
-        <div class="card-body">
-          <h5 class="card-title">Timeseries Plot <span>/ {{ ret.data.tags }}</span></h5>
-          {{ ret.data.figure | safe }}
         </div>
       </div>
     </div>
@@ -91,7 +78,6 @@
 
 {% block scripts %}
 <script src="/static/js/HistorianRecap.js"></script>
-<script src="/static/js/vendor/plotly.js"></script>
 <script>
   $(document).ready(function () {
     getTagLists('{{unit}}');
