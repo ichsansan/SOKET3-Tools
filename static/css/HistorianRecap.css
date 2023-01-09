@@ -1,0 +1,18 @@
+.btn {
+    transition: .4s;
+}
+
+.selected {
+    rotate: 45deg;
+    pointer-events: none;
+    color: brown;
+}
+
+.btn.tags-item {
+    margin: 0.25rem;
+}
+
+#tagLists {
+    min-height: 150px;
+    max-height: 300px;
+}

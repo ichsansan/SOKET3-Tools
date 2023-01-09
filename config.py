@@ -20,8 +20,8 @@ tables = {
         'timestep': '5min',
     },
     'PLTU Paiton 9': {
-        'tb_history': 'tb_history_tidore',
-        'tb_im_tags': 'tb_im_tags_tidore',
+        'tb_history': 'tb_history_paiton9',
+        'tb_im_tags': 'tb_im_tags_paiton9',
         'timestep': '5min',
     },
 }
