@@ -54,5 +54,18 @@ project = {
             'f_filesize': 'File Size',
             'f_file_status': 'File Status'
         }
+    },
+    'PLNNP Google Drive':{
+        'link': 'https://drive.google.com/drive/folders/1ltcYtfNijJCqXYvRwRoXrOhgLzdXtzcB',
+        'table_rename':{
+            'f_id': None,
+            'f_project_name':None,
+            'f_path': 'File Location',
+            'f_filename': 'File Name',
+            'f_created_time': None,
+            'f_modified_time': 'Modified Time',
+            'f_filesize': 'File Size',
+            'f_file_status': 'File Status'
+        }
     }
 }

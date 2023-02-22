@@ -31,6 +31,7 @@ def get_service_pjbboxcompare(data=None, datestart=None, dateend=None):
 
     engine = create_engine(con)
     project_name = 'PJB Box SOKET3'
+    project_name = 'PLNNP Google Drive'
 
     if (datestart is None) and (dateend is None):
         datestart, dateend = pd.to_datetime('now').floor('d'), pd.to_datetime('now') + pd.to_timedelta(f"{timezone}h")
@@ -75,6 +76,7 @@ def get_service_daftarisi(data = {}):
     }
     engine = create_engine(con)
     project_name = 'PJB Box SOKET3'
+    project_name = 'PLNNP Google Drive'
     if 'project_name' in data.keys(): project_name = data['project_name']
 
     Data = pd.read_sql( f"""SELECT f_filename, f_filesize, f_path, f_modified_time, f_updated_at FROM tb_daftar_isi_rekap WHERE f_project_name = "{project_name}" 
@@ -94,6 +96,7 @@ def get_service_perubahan_daftarisi(data = {}):
     }
     engine = create_engine(con)
     project_name = 'PJB Box SOKET3'
+    project_name = 'PLNNP Google Drive'
     datestart = pd.to_datetime('now').floor('d')
     dateend = pd.to_datetime('now') + pd.to_timedelta(f"{timezone}h")
     daterange = None
@@ -106,14 +109,13 @@ def get_service_perubahan_daftarisi(data = {}):
     if 'npage' in data.keys(): page = data['npage']
 
     time.sleep(np.random.randint(10) / 1000)
-    print(f"Get service perubahan daftar isi:", project_name, datestart, dateend, daterange)
 
     if daterange is not None:
         if daterange != 'Today':
             datestart = dateend - pd.to_timedelta(daterange)
 
     # Pagination
-    l1 = 0; l2 = 100; LIMIT = ""
+    l1 = 0; l2 = 500; LIMIT = ""
     if bool(page) or bool(limit):
         page = max([int(page),0]); limit = int(limit)
         l1 = (page) * limit
@@ -121,10 +123,11 @@ def get_service_perubahan_daftarisi(data = {}):
         LIMIT = f"LIMIT {l1},{l2}"
 
     cols = {k:v for k,v in config.project[project_name]['table_rename'].items() if v is not None}
-
-    Data = pd.read_sql( f"""SELECT f_filename, f_filesize, f_path, f_modified_time, f_updated_at, f_file_status FROM tb_daftar_isi_rekap 
-                            WHERE f_project_name = "{project_name}" AND f_updated_at BETWEEN "{datestart.strftime('%Y-%m-%d %X')}" AND "{dateend.strftime('%Y-%m-%d %X')}"
-                            """, engine)
+    
+    q = f"""SELECT f_filename, f_filesize, f_path, f_modified_time, f_updated_at, f_file_status FROM tb_daftar_isi_rekap 
+            WHERE f_project_name = "{project_name}" AND f_updated_at BETWEEN "{datestart.strftime('%Y-%m-%d %X')}" AND "{dateend.strftime('%Y-%m-%d %X')}"
+            """
+    Data = pd.read_sql( q, engine)
     Data = Data.groupby('f_path').first().reset_index()
     Data = Data.rename(columns={'f_filename': 'File Name', 'f_filesize':'File Size', 
                                 'f_path': 'File Location', 'f_modified_time':'Modified Time', 
@@ -133,6 +136,7 @@ def get_service_perubahan_daftarisi(data = {}):
     Data.insert(0, 'Path', [f.split('/')[0] for f in Data['File Location']])
     Data['File Location'] = [f"/{f[0].replace(f[1],'')}" for f in Data[['File Location','File Name']].values]
     Data['File Status'] = [f"<span class='badge bg-primary'>File baru</span>" if f == 1 else f"<span class='badge bg-danger'>File didelete</span>" for f in Data['File Status']]
+    Data = Data.sort_values(['File Status','File Size'], ascending=False)
     if project_name == 'PJB Box SOKET3':
         Data['Link'] = [f"""<a href='{box_link}?path={quote(f)}' target="_blank" rel="noopener noreferrer"><i class='fas fa-up-right-from-square'></i></a>""" for f in Data['File Location']]
     Data['File Size'] = [convert_size(int(f)) for f in Data['File Size']]
@@ -153,13 +157,13 @@ def get_service_perubahan_daftarisi(data = {}):
         'page': page,
         'limit': limit
     }
-    print(ret['pagination'])
     return ret
 
 def get_service_recent_activity(data):
     ret = {}
     engine = create_engine(con)
     project_name = 'PJB Box SOKET3'
+    project_name = 'PLNNP Google Drive'
     
     if 'project_name' in data.keys(): project_name = data['project_name']
     q = f"""SELECT f_updated_at AS `date`, count(*) AS `filecount`, f_file_status AS file_status FROM tb_daftar_isi_rekap
@@ -182,8 +186,8 @@ def get_service_taglists(unit):
     unit = unit.replace('-', ' ')
     tb_im_tags = config.tables[unit]['tb_im_tags']
 
-    Data = pd.read_sql( f"""SELECT f_tag_name AS TagName, f_tag_name_alt1 AS TagAlt
-                            FROM historian.{tb_im_tags} ORDER BY f_tag_name ASC """, con)
+    Data = pd.read_sql( f"""SELECT f_tag_name AS TagName, f_description AS TagAlt
+                            FROM historian.{tb_im_tags} WHERE f_is_active = 1 ORDER BY f_tag_name ASC """, con)
     ret = Data.astype(str).to_dict(orient='records')
     return ret
 
